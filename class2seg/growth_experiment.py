@@ -10,12 +10,12 @@ import numpy as np
 from fire import Fire
 
 from eval_seg import cracks_per_patch_max_width
-from model.activation_map.map_utils import map_factory
-from model.classifier import Classifier
-from model.explainer_classifier import ExplainerClassifier
-from model.segmenter import Segmenter
-from model.eval_utils import post_factory, simple_post, GMM_post, closing_post, area_opening_post, threshold_post
-from transforms import AddInverse
+from class2seg.model.activation_map.map_utils import map_factory
+from class2seg.model.classifier import Classifier
+from class2seg.model.explainer_classifier import ExplainerClassifier
+from class2seg.model.segmenter import Segmenter
+from class2seg.model.eval_utils import post_factory, simple_post, GMM_post, closing_post, area_opening_post, threshold_post
+from class2seg.transforms import AddInverse
 
 
 SEED = 42

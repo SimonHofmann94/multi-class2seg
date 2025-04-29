@@ -1,6 +1,6 @@
 import pytorch_lightning as pl
 
-from model.ternausnet import UNet11, UNet16
+from class2seg.model.ternausnet import UNet11, UNet16
 
 
 class UNet11Explainer(pl.LightningModule):

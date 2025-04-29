@@ -5,13 +5,13 @@ from torch import nn
 from torch.optim import Adam
 from pathlib import Path
 
-from model.explainer import UNet11Explainer, UNet16Explainer
-from model.classifier import Classifier
-from utils import helper
-from utils.image_utils import save_mask, save_masked_image, save_all_class_masks
-from utils.loss import TotalVariationConv, ClassMaskAreaLoss, entropy_loss
-from utils.metrics import SingleLabelMetrics, BinarySegmentationMetrics
-from transforms import UnNormalize, MEAN, STD
+from class2seg.model.explainer import UNet11Explainer, UNet16Explainer
+from class2seg.model.classifier import Classifier
+from class2seg.utils import helper
+from class2seg.utils.image_utils import save_mask, save_masked_image, save_all_class_masks
+from class2seg.utils.loss import TotalVariationConv, ClassMaskAreaLoss, entropy_loss
+from class2seg.utils.metrics import SingleLabelMetrics, BinarySegmentationMetrics
+from class2seg.transforms import UnNormalize, MEAN, STD
 
 
 class ExplainerClassifier(pl.LightningModule):

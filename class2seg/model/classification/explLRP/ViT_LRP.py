@@ -4,10 +4,10 @@ Hacked together by / Copyright 2020 Ross Wightman
 import torch
 import torch.nn as nn
 from einops import rearrange
-from model.classification.explLRP.layers_ours import *
-from model.classification.explLRP.helpers import load_pretrained
-from model.classification.explLRP.weight_init import trunc_normal_
-from model.classification.explLRP.layer_helpers import to_2tuple
+from class2seg.model.classification.explLRP.layers_ours import *
+from class2seg.model.classification.explLRP.helpers import load_pretrained
+from class2seg.model.classification.explLRP.weight_init import trunc_normal_
+from class2seg.model.classification.explLRP.layer_helpers import to_2tuple
 
 
 def _cfg(url='', **kwargs):

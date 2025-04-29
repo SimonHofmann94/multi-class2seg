@@ -5,12 +5,12 @@ from torch import nn
 from torchvision import models
 from torchvision.models import VisionTransformer
 
-from model.classification.explLRP.ViT_LRP import vit_base_patch16_224 as vit_LRP
-from model.classification.explLRP.layers_ours import Linear as LinearLRP
-from model.classification.resnet import BasicBlock as BasicBlock_Mod
-from model.classification.resnet import resnet18_deeplift, resnet34_deeplift
-from model.classification import vgg_bcos
-from model.classification.bcosconv2d import BcosConv2d, FinalLayer
+from .classification.explLRP.ViT_LRP import vit_base_patch16_224 as vit_LRP
+from .classification.explLRP.layers_ours import Linear as LinearLRP
+from .classification.resnet import BasicBlock as BasicBlock_Mod
+from .classification.resnet import resnet18_deeplift, resnet34_deeplift
+from .classification import vgg_bcos
+from .classification.bcosconv2d import BcosConv2d, FinalLayer
 
 from sklearn.metrics import (
     accuracy_score,

@@ -4,9 +4,9 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 
 import data
-from model.explainer_classifier import ExplainerClassifier
-from transforms import get_train_transform, get_val_transform
-from utils.argparser import get_parser, write_config_file
+from class2seg.model.explainer_classifier import ExplainerClassifier
+from class2seg.transforms import get_train_transform, get_val_transform
+from class2seg.utils.argparser import get_parser, write_config_file
 
 
 def main(args):

@@ -10,7 +10,7 @@ from sklearn.preprocessing import MinMaxScaler
 import cv2
 
 from constants import SEED
-from model.beta import BetaMixtureModel
+from class2seg.model.beta import BetaMixtureModel
 
 
 def quantile_post(cam: np.ndarray, quantile: float = 0.8) -> np.ndarray:

@@ -3,7 +3,7 @@ import pytorch_lightning as pl
 import torch
 from torch import nn
 
-from model.ternausnet import UNet11, UNet16
+from class2seg.model.ternausnet import UNet11, UNet16
 
 from sklearn.metrics import f1_score, precision_score, recall_score, jaccard_score
 

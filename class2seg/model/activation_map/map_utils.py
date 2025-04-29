@@ -25,11 +25,11 @@ from pytorch_grad_cam import (
 from pytorch_grad_cam.base_cam import BaseCAM
 from zennit.composites import Composite, EpsilonGammaBox
 from zennit.rules import AlphaBeta
-from model.classification.explLRP.ViT_explanation_generator import LRP as LRPViT
+from class2seg.model.classification.explLRP.ViT_explanation_generator import LRP as LRPViT
 import cv2
 from functools import partial
 
-from model.classifier import Conv2dAlphaBeta
+from class2seg.model.classifier import Conv2dAlphaBeta
 from transforms import MEAN, STD
 
 

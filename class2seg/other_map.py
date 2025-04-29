@@ -8,9 +8,9 @@ from tqdm import tqdm
 import time
 
 import data
-from model.activation_map.map_utils import map_factory, process_save_cams
-from model.classifier import Classifier
-from transforms import get_val_transform, augmentation_smoothing, augmentation_intersection
+from class2seg.model.activation_map.map_utils import map_factory, process_save_cams
+from class2seg.model.classifier import Classifier
+from class2seg.transforms import get_val_transform, augmentation_smoothing, augmentation_intersection
 from functools import partial
 
 from transforms import UnNormalize, MEAN, STD

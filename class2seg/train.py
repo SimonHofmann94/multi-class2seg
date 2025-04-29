@@ -6,7 +6,7 @@ from pytorch_lightning.loggers import TensorBoardLogger
 
 import data
 from model.classifier import Classifier
-from transforms import get_train_transform, get_val_transform
+from .transforms import get_train_transform, get_val_transform
 
 
 def parse_args():
@@ -97,7 +97,6 @@ def main(args):
         callbacks=[checkpointer],
         logger=logger,
         fast_dev_run=False,
-        resume_from_checkpoint=checkpoint,
         log_every_n_steps=1
     )
 
@@ -112,9 +111,18 @@ def main(args):
                 test_loader = torch.utils.data.DataLoader(
                     val_ds, batch_size=args.batch_size, num_workers=workers, drop_last=False
                 )
-            return trainer.test(model=model, dataloaders=test_loader)
+            return trainer.test(
+                model=model,
+                dataloaders=test_loader,
+                ckpt_path=checkpoint,
+            )
 
-    return trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
+    return trainer.fit(
+        model=model,
+        train_dataloaders=train_loader,
+        val_dataloaders=val_loader,
+        ckpt_path=checkpoint,
+    )
 
 if __name__ == "__main__":
     main(parse_args())

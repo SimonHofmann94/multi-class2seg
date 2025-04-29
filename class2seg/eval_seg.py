@@ -11,8 +11,8 @@ import time
 
 from torch.utils.tensorboard import SummaryWriter
 import data
-from model.eval_utils import post_factory, simple_post, GMM_post, closing_post, area_opening_post
-from transforms import get_val_transform
+from class2seg.model.eval_utils import post_factory, simple_post, GMM_post, closing_post, area_opening_post
+from class2seg.transforms import get_val_transform
 
 import cv2
 import math

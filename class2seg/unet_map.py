@@ -8,9 +8,9 @@ from tqdm import tqdm
 import time
 
 import data
-from model.activation_map.map_utils import map_factory, process_save_cams
-from model.segmenter import Segmenter
-from transforms import get_val_transform, augmentation_smoothing
+from class2seg.model.activation_map.map_utils import map_factory, process_save_cams
+from class2seg.model.segmenter import Segmenter
+from class2seg.transforms import get_val_transform, augmentation_smoothing
 from functools import partial
 
 

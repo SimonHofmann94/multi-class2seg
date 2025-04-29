@@ -6,8 +6,8 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 
 import data
-from model.segmenter import Segmenter
-from transforms import get_train_transform, get_val_transform
+from class2seg.model.segmenter import Segmenter
+from class2seg.transforms import get_train_transform, get_val_transform
 
 import warnings
 warnings.filterwarnings("ignore")

@@ -5,7 +5,7 @@ from torchvision import models
 import pytorch_lightning as pl
 import numpy as np
 
-from model.ternausnet import DecoderBlockV2, Interpolate, ConvRelu
+from class2seg.model.ternausnet import DecoderBlockV2, Interpolate, ConvRelu
 
 
 class CAE11(nn.Module):

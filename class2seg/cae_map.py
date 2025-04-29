@@ -8,8 +8,8 @@ from tqdm import tqdm
 import time
 
 import data
-from model.activation_map.map_utils import process_save_cams
-from model.autoencoder import Autoencoder
+from class2seg.model.activation_map.map_utils import process_save_cams
+from class2seg.model.autoencoder import Autoencoder
 from transforms import get_val_transform, augmentation_smoothing
 
 

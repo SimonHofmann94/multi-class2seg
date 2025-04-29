@@ -5,8 +5,8 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 
 import data
-from model.autoencoder import Autoencoder
-from transforms import get_train_transform, get_val_transform
+from class2seg.model.autoencoder import Autoencoder
+from class2seg.transforms import get_train_transform, get_val_transform
 
 
 def parse_args():
