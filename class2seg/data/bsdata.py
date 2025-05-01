@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+import torch
 import pathlib
 from typing import Callable, List, Tuple
 from PIL import Image
@@ -39,12 +39,18 @@ class BSDataClassificationDataset(Dataset):
     def __len__(self) -> int:  # noqa: D401
         return len(self.samples)
 
-    def __getitem__(self, idx: int):
+    def __getitem__(self, idx):
         img_path, label = self.samples[idx]
         img = Image.open(img_path).convert("RGB")
+
         if self.transform is not None:
-            img = self.transform(img)
-        return img, label
+            img, _ = self.transform(img)      # nur Bild übernehmen
+
+        dummy_mask = torch.tensor(0)          # <-- Platzhalter
+        return img, label, dummy_mask         #      ^ 3-tes Element
+
+
+
 
     # ------------------------------------------------------------------
     def _scan(self) -> List[Tuple[pathlib.Path, int]]:

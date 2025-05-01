@@ -1,3 +1,4 @@
+print("[DEBUG transforms] geladen aus:", __file__)
 import random
 from typing import Callable
 
@@ -17,13 +18,34 @@ STD = [.1874794535405723, .1874794535405723, .1874794535405723]
 
 # https://github.com/pytorch/vision/blob/main/references/segmentation/
 def pad_if_smaller(img, size, fill=0):
-    min_size = min(img.shape)
-    if min_size < size:
-        ow, oh = img.shape[0], img.shape[1]
-        padh = size - oh if oh < size else 0
-        padw = size - ow if ow < size else 0
-        img = F.pad(img, (0, 0, padw, padh), fill=fill)
+    """
+    Pads Bilder (PIL oder Tensor), falls eine Kante kleiner als `size` ist.
+    Für Tensoren wird nur (H,W) betrachtet – der Kanal-Dim bleibt unberührt.
+    """
+    if isinstance(img, torch.Tensor):
+        _, h, w = img.shape  # Tensor: (C,H,W)
+    else:
+        w, h = img.size  # PIL:   (W,H)
+
+    pad_h = size - h if h < size else 0
+    pad_w = size - w if w < size else 0
+    if pad_h == 0 and pad_w == 0:
+        return img  # nichts zu tun
+
+    # immer in Tensor konvertieren, weil F.pad nur Tensoren kennt
+    if not isinstance(img, torch.Tensor):
+        img = F.to_tensor(img)
+
+    img = F.pad(img, (0, 0, pad_w, pad_h), fill=fill)
     return img
+
+
+class Resize:
+    def __init__(self, size):
+        self.op = T.Resize(size, antialias=True)
+
+    def __call__(self, img, tgt=None):
+        return self.op(img), tgt
 
 
 class Compose:
@@ -183,13 +205,13 @@ class AddInverse(nn.Module):
 
     def __init__(self, dim=0):
         """
-            
+
         """
         super().__init__()
         self.dim = dim
 
     def forward(self, in_tensor, target):
-        out = torch.cat([in_tensor, 1-in_tensor], self.dim)
+        out = torch.cat([in_tensor, 1 - in_tensor], self.dim)
         return out, target
 
 
@@ -211,7 +233,6 @@ class Normalize(nn.Module):
 
 def get_train_transform(crop_size=64, size=256, add_inverse=False, mean=MEAN, std=STD):
     transforms = [
-        ToTensor(),
         # RandomApply(
         #    T.ColorJitter(0.8, 0.8, 0.8, 0.2),
         #    p = 0.3
@@ -220,10 +241,12 @@ def get_train_transform(crop_size=64, size=256, add_inverse=False, mean=MEAN, st
         # RandomRot90(),
         # T.RandomRotation(90),
         # RandomResizedCrop(crop_size, interpolation=T.InterpolationMode.BILINEAR),
-        # RandomCrop(crop_size),
-        RandomResize(size),
+        # RandomResize(size),
+        Resize(size),
+        RandomCrop(crop_size),
         RandomHorizontalFlip(flip_prob=0.5),
         RandomVerticalFlip(flip_prob=0.5),
+        ToTensor(),
         # RandomApply(T.GaussianBlur((3, 3), (1.0, 2.0)), p=0.5),
         # RandomApply(PixelNoise(std_noise=0.75), p=0.5),
         # RandomApply(ChannelNoise(std_noise=0.25), p=0.5),
@@ -236,11 +259,11 @@ def get_train_transform(crop_size=64, size=256, add_inverse=False, mean=MEAN, st
     return Compose(transforms)
 
 
-def get_val_transform(crop_size=64, size=256, add_inverse=False, mean=MEAN, std=STD):
+def get_val_transform(size=256, add_inverse=False, **_):
     transforms = [
-        ToTensor(),
-        RandomResize(size),
-        # Normalize(mean, std)
+        Resize(size),  # PIL → 256×256  (fester Scale)
+        ToTensor(),  # jetzt Tensor
+        # Normalize(mean, std) # falls gewünscht
     ]
     if add_inverse:
         transforms.append(AddInverse())
@@ -248,79 +271,79 @@ def get_val_transform(crop_size=64, size=256, add_inverse=False, mean=MEAN, std=
 
 
 def augmentation_smoothing(
-    map_func: Callable,
-    input_tensor: torch.Tensor,
-    #    targets: List[torch.nn.Module],
-    #    eigen_smooth: bool = False
-    ) -> np.ndarray:
-        transforms = tta.Compose(
-            [
-                # tta.Rotate90(angles=[0, 90, 180, 270]),
-                tta.HorizontalFlip(),
-                tta.VerticalFlip(),
-                tta.Multiply(factors=[0.9, 1, 1.1]),
-            ]
-        )
-        cams = []
-        for transform in transforms:
-            augmented_tensor = transform.augment_image(input_tensor)
-            # cam = self.forward(augmented_tensor,
-            #                    targets,
-            #                    eigen_smooth)
-            cam = map_func(image=augmented_tensor)
+        map_func: Callable,
+        input_tensor: torch.Tensor,
+        #    targets: List[torch.nn.Module],
+        #    eigen_smooth: bool = False
+) -> np.ndarray:
+    transforms = tta.Compose(
+        [
+            # tta.Rotate90(angles=[0, 90, 180, 270]),
+            tta.HorizontalFlip(),
+            tta.VerticalFlip(),
+            tta.Multiply(factors=[0.9, 1, 1.1]),
+        ]
+    )
+    cams = []
+    for transform in transforms:
+        augmented_tensor = transform.augment_image(input_tensor)
+        # cam = self.forward(augmented_tensor,
+        #                    targets,
+        #                    eigen_smooth)
+        cam = map_func(image=augmented_tensor)
 
-            # The ttach library expects a tensor of size BxCxHxW
-            cam = cam[:, None, :, :]
-            cam = torch.from_numpy(cam)
-            cam = transform.deaugment_mask(cam)
+        # The ttach library expects a tensor of size BxCxHxW
+        cam = cam[:, None, :, :]
+        cam = torch.from_numpy(cam)
+        cam = transform.deaugment_mask(cam)
 
-            # Back to numpy float32, HxW
-            cam = cam.numpy()
-            cam = cam[:, 0, :, :]
-            cams.append(cam)
+        # Back to numpy float32, HxW
+        cam = cam.numpy()
+        cam = cam[:, 0, :, :]
+        cams.append(cam)
 
-        cam = np.mean(np.float32(cams), axis=0)
-        return cam
+    cam = np.mean(np.float32(cams), axis=0)
+    return cam
 
 
 def augmentation_intersection(
-    map_func: Callable,
-    input_tensor: torch.Tensor,
-    #    targets: List[torch.nn.Module],
-    #    eigen_smooth: bool = False
-    ) -> np.ndarray:
-        transforms = tta.Compose(
-            [
-                # tta.Rotate90(angles=[0, 90, 180, 270]),
-                tta.HorizontalFlip(),
-                tta.VerticalFlip(),
-                tta.Multiply(factors=[0.9, 1, 1.1]),
-            ]
-        )
-        cams = []
-        for transform in transforms:
-            augmented_tensor = transform.augment_image(input_tensor)
-            # cam = self.forward(augmented_tensor,
-            #                    targets,
-            #                    eigen_smooth)
-            cam = map_func(image=augmented_tensor)
+        map_func: Callable,
+        input_tensor: torch.Tensor,
+        #    targets: List[torch.nn.Module],
+        #    eigen_smooth: bool = False
+) -> np.ndarray:
+    transforms = tta.Compose(
+        [
+            # tta.Rotate90(angles=[0, 90, 180, 270]),
+            tta.HorizontalFlip(),
+            tta.VerticalFlip(),
+            tta.Multiply(factors=[0.9, 1, 1.1]),
+        ]
+    )
+    cams = []
+    for transform in transforms:
+        augmented_tensor = transform.augment_image(input_tensor)
+        # cam = self.forward(augmented_tensor,
+        #                    targets,
+        #                    eigen_smooth)
+        cam = map_func(image=augmented_tensor)
 
-            # The ttach library expects a tensor of size BxCxHxW
-            cam = cam[:, None, :, :]
-            cam = torch.from_numpy(cam)
-            cam = transform.deaugment_mask(cam)
+        # The ttach library expects a tensor of size BxCxHxW
+        cam = cam[:, None, :, :]
+        cam = torch.from_numpy(cam)
+        cam = transform.deaugment_mask(cam)
 
-            # Back to numpy float32, HxW
-            cam = cam.numpy()
-            cam = cam[:, 0, :, :]
-            cams.append(cam)
+        # Back to numpy float32, HxW
+        cam = cam.numpy()
+        cam = cam[:, 0, :, :]
+        cams.append(cam)
 
-        # Min-max scaling to be between 0 and 1
-        cams = np.float32(cams)
-        cams = (cams - cams.min()) / (cams.max() - cams.min() + 1e-12)
+    # Min-max scaling to be between 0 and 1
+    cams = np.float32(cams)
+    cams = (cams - cams.min()) / (cams.max() - cams.min() + 1e-12)
 
-        cam = np.prod(np.float32(cams), axis=0)
-        return cam
+    cam = np.prod(np.float32(cams), axis=0)
+    return cam
 
 
 def eigen_smooth(map):
