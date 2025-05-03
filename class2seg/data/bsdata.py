@@ -44,32 +44,26 @@ class BSDataClassificationDataset(Dataset):
         img = Image.open(img_path).convert("RGB")
 
         if self.transform is not None:
-            img, _ = self.transform(img)      # nur Bild übernehmen
+             img, _ = self.transform(img)
 
-        dummy_mask = torch.tensor(0)          # <-- Platzhalter
-        return img, label, dummy_mask         #      ^ 3-tes Element
-
+        # return (image, label, sample_id) so LightningModule can unpack x, y, _:
+        return img, label, img_path.name
 
 
 
     # ------------------------------------------------------------------
-    def _scan(self) -> List[Tuple[pathlib.Path, int]]:
-        """Collect (image_path, class_idx) pairs from the given `fold`."""
+    def _scan(self):
         fold_dir = self.root / self.fold
-        if not fold_dir.exists():
-            raise FileNotFoundError(f"Directory {fold_dir} does not exist")
-
-        class_to_idx = {d.name: i for i, d in enumerate(sorted(fold_dir.iterdir())) if d.is_dir()}
-        if not class_to_idx:
-            raise RuntimeError(f"No class sub‑directories found in {fold_dir}")
-
-        samples: List[Tuple[pathlib.Path, int]] = []
-        for class_name, class_idx in class_to_idx.items():
-            for p in (fold_dir / class_name).iterdir():
-                if p.suffix.lower() in self.IMG_EXTS:
-                    samples.append((p, class_idx))
-
-        if not samples:
-            raise RuntimeError(f"Found zero images in {fold_dir}")
-
+        dirs = sorted([d for d in fold_dir.iterdir()
+                       if d.is_dir() and not d.name.startswith('.')])
+        # now dirs == [Path(.../'defect'), Path(.../'no_defect')]
+        class_to_idx = {d.name: i for i, d in enumerate(dirs)}
+        # ==> {'defect': 0, 'no_defect': 1}
+        samples = []
+        for cls_name, cls_idx in class_to_idx.items():
+            for img_path in (fold_dir/cls_name).iterdir():
+                if img_path.suffix.lower() in self.IMG_EXTS:
+                    samples.append((img_path, cls_idx))
         return samples
+
+

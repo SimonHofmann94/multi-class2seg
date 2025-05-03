@@ -261,7 +261,7 @@ def get_train_transform(crop_size=64, size=256, add_inverse=False, mean=MEAN, st
 
 def get_val_transform(size=256, add_inverse=False, **_):
     transforms = [
-        Resize(size),  # PIL → 256×256  (fester Scale)
+        Resize((size,size)),  # PIL → 256×256  (fester Scale)
         ToTensor(),  # jetzt Tensor
         # Normalize(mean, std) # falls gewünscht
     ]
